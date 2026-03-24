@@ -66,6 +66,13 @@ struct ProjectListView: View {
                         } label: {
                             Label("User Guide", systemImage: "book")
                         }
+                        #if DEBUG
+                        Button {
+                            showTestPlan()
+                        } label: {
+                            Label("Test Plan", systemImage: "checklist")
+                        }
+                        #endif
                         Divider()
                         Toggle(isOn: $hapticsEnabled) {
                             Label("Haptic Feedback", systemImage: "hand.tap")
@@ -188,6 +195,27 @@ struct ProjectListView: View {
             presenter.present(activityVC, animated: true)
         }
     }
+
+    #if DEBUG
+    private func showTestPlan() {
+        let data = TestPlanPDFGenerator().generate()
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent("ProjectSimple_Test_Plan.pdf")
+        try? data.write(to: url)
+
+        let activityVC = UIActivityViewController(activityItems: [url], applicationActivities: nil)
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let rootVC = windowScene.keyWindow?.rootViewController {
+            var presenter = rootVC
+            while let presented = presenter.presentedViewController {
+                presenter = presented
+            }
+            activityVC.popoverPresentationController?.sourceView = presenter.view
+            activityVC.popoverPresentationController?.sourceRect = CGRect(x: presenter.view.bounds.midX, y: 0, width: 0, height: 0)
+            activityVC.popoverPresentationController?.permittedArrowDirections = .up
+            presenter.present(activityVC, animated: true)
+        }
+    }
+    #endif
 
     private func handleImport(_ result: Result<[URL], Error>) {
         switch result {
