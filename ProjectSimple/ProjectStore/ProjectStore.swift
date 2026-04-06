@@ -138,6 +138,7 @@ class ProjectStore {
         // Bump the token so views that read it re-evaluate, even when
         // the same Project objects are returned with different task data.
         refreshToken += 1
+        WidgetCenter.shared.reloadAllTimelines()
         let live = liveProjects
         print("🔄 Refreshed (token \(refreshToken)): \(live.count) projects, \(live.map { $0.safeTasks.count }.reduce(0, +)) total tasks")
     }

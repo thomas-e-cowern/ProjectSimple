@@ -5,23 +5,14 @@ enum SharedModelContainer {
     static let appGroupIdentifier = "group.mss.ProjectSimple"
 
     /// Creates the main app's ModelContainer with CloudKit sync enabled.
+    /// Uses the App Group container so the widget extension can read the same data.
     static func create() throws -> ModelContainer {
         let schema = Schema([Project.self, ProjectTask.self])
 
-        // Explicitly place the store in the app's private Application
-        // Support directory (NOT the App Group).  When an App Group
-        // entitlement is present, SwiftData may auto-select the shared
-        // container, which can interfere with CloudKit mirroring.
-        let appSupport = FileManager.default.urls(
-            for: .applicationSupportDirectory,
-            in: .userDomainMask
-        ).first!
-        try? FileManager.default.createDirectory(at: appSupport, withIntermediateDirectories: true)
-        let storeURL = appSupport.appendingPathComponent("ProjectSimple.store")
-
         let config = ModelConfiguration(
+            "ProjectSimple",
             schema: schema,
-            url: storeURL,
+            groupContainer: .identifier(appGroupIdentifier),
             cloudKitDatabase: .private("iCloud.mss.ProjectSimple")
         )
 
@@ -35,8 +26,9 @@ enum SharedModelContainer {
             print("⚠️ Falling back to local-only storage — SYNC WILL NOT WORK")
 
             let localConfig = ModelConfiguration(
+                "ProjectSimple",
                 schema: schema,
-                url: storeURL,
+                groupContainer: .identifier(appGroupIdentifier),
                 cloudKitDatabase: .none
             )
             return try ModelContainer(for: schema, configurations: localConfig)
