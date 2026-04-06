@@ -46,11 +46,11 @@ struct HomeScreenProvider: TimelineProvider {
     func getTimeline(in context: Context, completion: @escaping (Timeline<HomeScreenEntry>) -> Void) {
         let entry = fetchTasks()
 
-        // Refresh at midnight when new tasks may become overdue
-        let calendar = Calendar.current
-        let tomorrow = calendar.startOfDay(for: calendar.date(byAdding: .day, value: 1, to: .now)!)
+        // Refresh every 30 minutes to keep the widget current,
+        // in addition to on-demand reloads from the main app.
+        let refreshDate = Date.now.addingTimeInterval(30 * 60)
 
-        let timeline = Timeline(entries: [entry], policy: .after(tomorrow))
+        let timeline = Timeline(entries: [entry], policy: .after(refreshDate))
         completion(timeline)
     }
 
